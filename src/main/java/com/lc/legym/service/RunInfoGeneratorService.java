@@ -1,9 +1,9 @@
 package com.lc.legym.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.lc.legym.model.Device;
 import com.lc.legym.model.legym.LatLng;
 import com.lc.legym.model.legym.UploadRunInfoReqVo;
-import com.lc.legym.model.Device;
 import com.lc.legym.util.EncryptUtils;
 import com.lc.legym.util.RouteLineUtils;
 import kotlin.Pair;
@@ -81,7 +81,7 @@ public class RunInfoGeneratorService {
         result.setLimitationsGoalsSexInfoId(limitationsGoalsSexInfoId);
         result.setSignPoint(new ArrayList<>());
         if (!CollectionUtils.isEmpty(routeLine)) {
-            result.setRoutineLine(routeLine);
+            result.setRoutineLine(RouteLineUtils.getRouteLine(routeLine));
         } else {
             result.setRoutineLine(RouteLineUtils.getRouteLine(school, totMileage));
         }

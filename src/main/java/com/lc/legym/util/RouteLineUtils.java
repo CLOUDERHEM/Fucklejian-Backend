@@ -1,8 +1,8 @@
 package com.lc.legym.util;
 
 import com.alibaba.fastjson.JSON;
-import com.lc.legym.model.legym.LatLng;
 import com.lc.legym.model.Path;
+import com.lc.legym.model.legym.LatLng;
 import kotlin.Pair;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,6 +37,10 @@ public class RouteLineUtils {
         List<LatLng> routeLine = path.getRouteLine();
 
         // 增加路径
+        return getRouteLine(routeLine);
+    }
+
+    public static List<LatLng> getRouteLine(List<LatLng> routeLine) {
         List<LatLng> result = new ArrayList<>(40);
         for (int i = 1; i < routeLine.size(); i++) {
             LatLng start = routeLine.get(i - 1);
@@ -44,7 +48,6 @@ public class RouteLineUtils {
             int pieces = new Random().nextInt(5) + 10;
             addRouteLine(result, start, end, pieces);
         }
-
         return result;
     }
 
