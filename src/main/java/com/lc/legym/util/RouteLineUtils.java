@@ -32,6 +32,9 @@ public class RouteLineUtils {
                 list.add(e);
             }
         });
+        if (list.isEmpty()) {
+            throw new Exception("没有跑步路线, 跑步失败");
+        }
         int index = new Random().nextInt(list.size() + 1) % list.size();
         Path path = list.get(index);
         List<LatLng> routeLine = path.getRouteLine();
