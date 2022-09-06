@@ -10,7 +10,7 @@ public final class SystemConfig {
     /**
      * 运行结果保存的最大时长, 默认15s
      */
-    public static final int MAX_OBJECT_EXIST_TIME = 100 * 1000;
+    public static final int MAX_OBJECT_EXIST_TIME = 30 * 1000;
 
     /**
      * 核心线程数量

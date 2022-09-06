@@ -31,7 +31,7 @@ public class RunningService {
         this.runInfoGeneratorService = runInfoGeneratorService;
     }
 
-    public ResultData<String> uploadDetail(String userId, String userPassword, double validMileage, List<LatLng> routeLine) throws Exception {
+    public ResultData<?> uploadDetail(String userId, String userPassword, double validMileage, List<LatLng> routeLine) throws Exception {
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("entrance", "1");
@@ -40,7 +40,7 @@ public class RunningService {
         HttpUtils.doGet(HOST + "/education/semester/getCurrent", null);
         String info = HttpUtils.doPost(HOST + "/authorization/user/manage/login", jsonObject.toJSONString(), null);
         if ((jsonObject = JSONObject.parseObject(info)).getInteger(CODE) != 0) {
-            return ResultData.error("登录失败！请检查用户名密码！");
+            return ResultData.error(jsonObject.getString("message"));
         }
         jsonObject.put("userPhone", userId);
         jsonObject.put("passWord", userPassword);
@@ -52,17 +52,17 @@ public class RunningService {
         String schoolName = jsonObject.getString("schoolName");
         Pair<String, String> school = new Pair<>(schoolId, schoolName);
         if (CollectionUtils.isEmpty(routeLine) && !RouteLineUtils.hasRouteLine(school)) {
-            return ResultData.error("没有指定的跑步路线");
+            return ResultData.error("未找到跑步路线, 跑步失败");
         }
 
         info = HttpUtils.doGet(HOST + "/authorization/mobileApp/getLastVersion?platform=1", accessToken);
         if ((jsonObject = JSONObject.parseObject(info)).getInteger(CODE) != 0) {
-            return ResultData.error("获取版本失败, 为确保安全无法继续跑步");
+            return ResultData.error("获取版本失败, 为确保安全结束跑步");
         }
 
         if (jsonObject.getJSONObject("data").getInteger("version") != 3000320) {
             log.info("乐健已更新新版本：" + jsonObject.getJSONObject("data").getInteger("version"));
-            return ResultData.error("乐健更新新版本！无法确保安全，停止任务！");
+            return ResultData.error("乐健更新新版本！无法确保安全，跑步失败！");
         }
 
         String versionLabel = jsonObject.getJSONObject("data").getString("versionLabel");
@@ -73,7 +73,7 @@ public class RunningService {
 
         info = HttpUtils.doGet(HOST + "/education/semester/getCurrent", accessToken);
         if ((jsonObject = JSONObject.parseObject(info)).getInteger(CODE) != 0 || jsonObject.get("data") == null) {
-            return ResultData.error("获取semesterId失败，不在学期中,跑步结束");
+            return ResultData.error("获取semesterId失败，不在学期中, 跑步失败");
         }
 
         String semesterId = jsonObject.getJSONObject("data").getString("id");
@@ -81,7 +81,7 @@ public class RunningService {
         semJson.put("semesterId", semesterId);
         info = HttpUtils.doPost(HOST + "/running/app/getRunningLimit", semJson.toJSONString(), accessToken);
         if ((jsonObject = JSONObject.parseObject(info)).getInteger(CODE) != 0) {
-            return ResultData.error("获取RunningLimit失败，跑步结束");
+            return ResultData.error("获取RunningLimit失败，跑步失败");
         }
 
         String limitationsGoalsSexInfoId = jsonObject.getJSONObject("data").getString("limitationsGoalsSexInfoId");
@@ -98,7 +98,7 @@ public class RunningService {
         jsonObject.put("scoringType", 1);
         String runningRange = HttpUtils.doPost(HOST + "/running/app/getRunningRange", jsonObject.toJSONString(), accessToken);
         if (JSONObject.parseObject(runningRange).getInteger(CODE) != 0) {
-            return ResultData.error("获取跑步范围失败！, 跑步结束");
+            return ResultData.error("无法获取跑步范围！跑步失败");
         }
 
         // 手机号最后一位固定手机类型
@@ -115,10 +115,10 @@ public class RunningService {
         String endJsonReturn = HttpUtils.doPost(HOST + "/running/app/v2/uploadRunningDetails", runningInfo, accessToken);
         JSONObject endReturn = JSONObject.parseObject(endJsonReturn);
         if (endReturn.getInteger(CODE) != 0) {
-            return ResultData.error("发送跑步数据包失败！跑步结束");
+            return ResultData.error("数据包发送失败！跑步失败!");
         }
 
-        return ResultData.success("跑步成功", endReturn.getString("data"));
+        return ResultData.success("跑步成功!", endReturn.getString("data"));
 
     }
 

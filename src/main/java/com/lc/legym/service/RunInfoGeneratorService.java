@@ -111,7 +111,7 @@ public class RunInfoGeneratorService {
         result.setSignDigital(hs);
 
         String s = JSONObject.toJSONString(result);
-        log.info("{}", s);
+        // log.info("{}", s);
         return s;
 
     }
