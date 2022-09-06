@@ -5,6 +5,7 @@ import com.lc.legym.model.vo.JobVO;
 import com.lc.legym.model.vo.RequestVO;
 import com.lc.legym.util.CacheMap;
 import com.lc.legym.util.ResultData;
+import com.lc.legym.util.ThreadLocalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -43,12 +44,12 @@ public class EntryService {
         String jobId = UUID.randomUUID().toString();
         job.setId(jobId);
         job.setTimestamp(System.currentTimeMillis());
-
+        String remoteAdd = (String) ThreadLocalUtils.get();
         Future<ResultData<?>> submit = threadPoolExecutor.submit(
                 () -> runningService.uploadDetail(requestVO.getUsername(),
                         requestVO.getPassword(),
                         requestVO.getMile(),
-                        requestVO.getRouteLine()));
+                        requestVO.getRouteLine(),remoteAdd));
 
         JOB_LIST.put(jobId, submit);
 

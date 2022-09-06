@@ -31,7 +31,7 @@ public class RunningService {
         this.runInfoGeneratorService = runInfoGeneratorService;
     }
 
-    public ResultData<?> uploadDetail(String userId, String userPassword, double validMileage, List<LatLng> routeLine) throws Exception {
+    public ResultData<?> uploadDetail(String userId, String userPassword, double validMileage, List<LatLng> routeLine, String remoteAdd) throws Exception {
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("entrance", "1");
@@ -42,8 +42,6 @@ public class RunningService {
         if ((jsonObject = JSONObject.parseObject(info)).getInteger(CODE) != 0) {
             return ResultData.error(jsonObject.getString("message"));
         }
-        jsonObject.put("userPhone", userId);
-        jsonObject.put("passWord", userPassword);
 
         jsonObject = jsonObject.getJSONObject("data");
         String accessToken = jsonObject.getString("accessToken");

@@ -3,11 +3,13 @@ package com.lc.legym.controller;
 import com.lc.legym.model.vo.RequestVO;
 import com.lc.legym.service.EntryService;
 import com.lc.legym.util.ResultData;
+import com.lc.legym.util.ThreadLocalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.ExecutionException;
 
 
@@ -29,11 +31,12 @@ public class OneController {
     }
 
     @PostMapping("/api/upload")
-    public ResultData<?> upload(@RequestBody @Validated RequestVO requestVO, @RequestParam String ak) {
+    public ResultData<?> upload(@RequestBody @Validated RequestVO requestVO, @RequestParam String ak, HttpServletRequest request) {
         log.info("{}", requestVO);
         if (!AK.equals(ak)) {
             return ResultData.error("无效ak");
         }
+        ThreadLocalUtils.set(request.getHeader("X-Real-IP"));
         return entryService.run(requestVO);
     }
 
