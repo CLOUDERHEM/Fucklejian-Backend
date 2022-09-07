@@ -25,7 +25,6 @@ import static com.lc.legym.enums.Constant.MAX_MSG_LENGTH;
 public class GlobalExceptionHandler {
 
 
-
     @ExceptionHandler(Exception.class)
     public ResultData<String> handleException(Exception ex) {
 
@@ -55,7 +54,7 @@ public class GlobalExceptionHandler {
         StringBuilder sb = new StringBuilder();
         collect.forEach(sb::append);
 
-        log.error("", ex);
+        // log.error("", ex);
 
         return ResultData.builder()
                 .code(1)
@@ -72,7 +71,7 @@ public class GlobalExceptionHandler {
         StringBuilder sb = new StringBuilder();
         collect.forEach(e -> sb.append(e).append(" "));
 
-        log.error("", ex);
+        // log.error("", ex);
 
         return ResultData.builder()
                 .code(1)
@@ -89,7 +88,7 @@ public class GlobalExceptionHandler {
         StringBuilder sb = new StringBuilder();
         errorInformation.forEach(sb::append);
 
-        log.error("", ex);
+        // log.error("", ex);
 
         return ResultData.builder()
                 .code(1)
