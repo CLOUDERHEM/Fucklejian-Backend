@@ -18,10 +18,9 @@ import java.util.concurrent.ExecutionException;
  * @date 9/4/2022 9:15 PM
  */
 @Slf4j
+@RequestMapping("/api")
 @RestController
 public class OneController {
-
-    private static final String AK = "lc1010lc1010";
 
     private EntryService entryService;
 
@@ -30,22 +29,17 @@ public class OneController {
         this.entryService = entryService;
     }
 
-    @PostMapping("/api/upload")
+    @PostMapping("/running/upload")
     public ResultData<?> upload(@RequestBody @Validated RequestVO requestVO, @RequestParam String ak, HttpServletRequest request) {
         log.info("{}", requestVO);
-        if (!AK.equals(ak)) {
-            return ResultData.error("无效ak");
-        }
+
         ThreadLocalUtils.set(request.getHeader("X-Real-IP"));
-        return entryService.run(requestVO);
+        return entryService.run(requestVO, ak);
     }
 
-    @GetMapping("/api/result")
+    @GetMapping("/running/query")
     public ResultData<?> result(@RequestParam String id, @RequestParam String ak) throws ExecutionException, InterruptedException {
-        if (!AK.equals(ak)) {
-            return ResultData.error("无效ak");
-        }
-        return entryService.query(id);
+        return entryService.query(id, ak);
     }
 
 }

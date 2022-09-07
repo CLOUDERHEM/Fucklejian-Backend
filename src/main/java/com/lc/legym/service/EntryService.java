@@ -1,6 +1,8 @@
 package com.lc.legym.service;
 
 import com.lc.legym.config.SystemConfig;
+import com.lc.legym.mapper.AkMapper;
+import com.lc.legym.model.AkDO;
 import com.lc.legym.model.vo.JobVO;
 import com.lc.legym.model.vo.RequestVO;
 import com.lc.legym.util.CacheMap;
@@ -27,6 +29,12 @@ public class EntryService {
 
     private RunningService runningService;
     private ThreadPoolTaskExecutor threadPoolExecutor;
+    private AkMapper akMapper;
+
+    @Autowired
+    public void setAkMapper(AkMapper akMapper) {
+        this.akMapper = akMapper;
+    }
 
     @Autowired
     public void setRunningService(RunningService runningService) {
@@ -38,18 +46,35 @@ public class EntryService {
         this.threadPoolExecutor = asyncServiceExecutor;
     }
 
-    public ResultData<?> run(RequestVO requestVO) {
+    public ResultData<?> run(RequestVO requestVO, String ak) {
+
+        AkDO akDo = akMapper.getAkDo(ak);
+        if (akDo == null) {
+            return ResultData.error("无效邀请码");
+        }
+        if (akDo.getUsageCount() >= akDo.getTotalCount()) {
+            return ResultData.error("邀请码使用次数已用尽!");
+        }
 
         JobVO job = new JobVO();
         String jobId = UUID.randomUUID().toString();
         job.setId(jobId);
         job.setTimestamp(System.currentTimeMillis());
         String remoteAdd = (String) ThreadLocalUtils.get();
+
         Future<ResultData<?>> submit = threadPoolExecutor.submit(
-                () -> runningService.uploadDetail(requestVO.getUsername(),
-                        requestVO.getPassword(),
-                        requestVO.getMile(),
-                        requestVO.getRouteLine(),remoteAdd));
+                () -> {
+                    ResultData<?> resultData = runningService.uploadDetail(requestVO.getUsername(),
+                            requestVO.getPassword(),
+                            requestVO.getMile(),
+                            requestVO.getRouteLine(), remoteAdd);
+
+                    // 次数减一
+                    if (resultData.getCode().equals(0)) {
+                        akMapper.useAkDo(ak);
+                    }
+                    return resultData;
+                });
 
         JOB_LIST.put(jobId, submit);
 
@@ -58,17 +83,23 @@ public class EntryService {
     }
 
 
-    public ResultData<?> query(String id) throws ExecutionException, InterruptedException {
+    public ResultData<?> query(String id, String ak) throws ExecutionException, InterruptedException {
+
 
         if (JOB_LIST.isEmpty()) {
-            return ResultData.error("没有该任务");
+            return ResultData.error("任务不存在");
         }
 
         Future<ResultData<?>> future = JOB_LIST.get(id);
-
         if (future == null) {
-            return ResultData.error("没有该任务");
+            return ResultData.error("任务不存在");
         }
+
+        AkDO akDo = akMapper.getAkDo(ak);
+        if (akDo == null) {
+            return ResultData.error("无效邀请码");
+        }
+
         if (!future.isDone()) {
             return ResultData.error(2, "跑步任务仍在运行中, 请等待", null);
         }

@@ -28,6 +28,9 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
     implementation 'cn.hutool:hutool-core:5.8.0'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    runtimeOnly 'mysql:mysql-connector-java'
+    implementation 'com.alibaba:druid-spring-boot-starter:1.2.9'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
 }
 
 tasks.named('test') {
