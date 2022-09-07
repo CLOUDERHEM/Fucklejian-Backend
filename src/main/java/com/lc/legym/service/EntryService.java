@@ -1,6 +1,7 @@
 package com.lc.legym.service;
 
 import com.lc.legym.config.SystemConfig;
+import com.lc.legym.enums.Constant;
 import com.lc.legym.mapper.AkMapper;
 import com.lc.legym.model.AkDO;
 import com.lc.legym.model.vo.JobVO;
@@ -60,16 +61,18 @@ public class EntryService {
         String jobId = UUID.randomUUID().toString();
         job.setId(jobId);
         job.setTimestamp(System.currentTimeMillis());
-        String remoteAdd = (String) ThreadLocalUtils.get();
+        String remoteAdd = (String) ThreadLocalUtils.get(Constant.REMOTE_ADD);
 
         Future<ResultData<?>> submit = threadPoolExecutor.submit(
                 () -> {
                     ResultData<?> resultData = runningService.uploadDetail(requestVO.getUsername(),
                             requestVO.getPassword(),
                             requestVO.getMile(),
-                            requestVO.getRouteLine(), remoteAdd);
+                            requestVO.getRouteLine(),
+                            remoteAdd,
+                            ak);
 
-                    // 次数减一
+                    // 使用次数加一
                     if (resultData.getCode().equals(0)) {
                         akMapper.useAkDo(ak);
                     }

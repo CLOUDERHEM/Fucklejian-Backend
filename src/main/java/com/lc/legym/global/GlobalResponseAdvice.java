@@ -18,6 +18,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static com.lc.legym.enums.Constant.MAX_MSG_LENGTH;
+
 /**
  * @author Aaron Yeung
  * @date 4/14/2022 10:30 PM
@@ -25,8 +27,6 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class GlobalResponseAdvice implements ResponseBodyAdvice<Object> {
-
-    private static final int MAX_MSG_LENGTH = 50;
 
     private ObjectMapper objectMapper;
 

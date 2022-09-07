@@ -1,5 +1,6 @@
 package com.lc.legym.controller;
 
+import com.lc.legym.enums.Constant;
 import com.lc.legym.mapper.AkMapper;
 import com.lc.legym.model.AkDO;
 import com.lc.legym.model.vo.RequestAkVO;
@@ -19,7 +20,6 @@ import java.util.UUID;
 @RestController
 public class AkController {
 
-    private static final String AK = "clouderhem.github.io";
 
     private AkMapper akMapper;
 
@@ -31,7 +31,7 @@ public class AkController {
     @PostMapping("/ak/generate")
     public ResultData<AkDO> generate(@RequestBody @Validated RequestAkVO akVO) {
 
-        if (!AK.equals(akVO.getAk())) {
+        if (!Constant.PRIVATE_AK.equals(akVO.getAk())) {
             return ResultData.error("私人秘钥不正确");
         }
         AkDO result = new AkDO();

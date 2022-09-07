@@ -1,5 +1,6 @@
 package com.lc.legym.controller;
 
+import com.lc.legym.enums.Constant;
 import com.lc.legym.model.vo.RequestVO;
 import com.lc.legym.service.EntryService;
 import com.lc.legym.util.ResultData;
@@ -33,7 +34,8 @@ public class OneController {
     public ResultData<?> upload(@RequestBody @Validated RequestVO requestVO, @RequestParam String ak, HttpServletRequest request) {
         log.info("{}", requestVO);
 
-        ThreadLocalUtils.set(request.getHeader("X-Real-IP"));
+        ThreadLocalUtils.set(Constant.REMOTE_ADD, request.getHeader("X-Real-IP"));
+        ThreadLocalUtils.set(Constant.AK, ak);
         return entryService.run(requestVO, ak);
     }
 

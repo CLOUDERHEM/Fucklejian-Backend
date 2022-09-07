@@ -14,6 +14,8 @@ import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.lc.legym.enums.Constant.MAX_MSG_LENGTH;
+
 /**
  * @author Aaron Yeung
  * @date 4/8/2022 6:54 PM
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final int MAX_MSG_LENGTH = 50;
+
 
     @ExceptionHandler(Exception.class)
     public ResultData<String> handleException(Exception ex) {

@@ -8,6 +8,7 @@ import lombok.Data;
  */
 @Data
 public class JobLog {
+    private String ak;
     private String date;
     private String name;
     private double mile;

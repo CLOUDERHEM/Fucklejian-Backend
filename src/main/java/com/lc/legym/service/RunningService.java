@@ -31,7 +31,7 @@ public class RunningService {
         this.runInfoGeneratorService = runInfoGeneratorService;
     }
 
-    public ResultData<?> uploadDetail(String userId, String userPassword, double validMileage, List<LatLng> routeLine, String remoteAdd) throws Exception {
+    public ResultData<?> uploadDetail(String userId, String userPassword, double validMileage, List<LatLng> routeLine, String remoteAdd, String ak) throws Exception {
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("entrance", "1");
