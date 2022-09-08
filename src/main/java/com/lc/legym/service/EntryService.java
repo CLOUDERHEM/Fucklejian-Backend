@@ -61,7 +61,7 @@ public class EntryService {
         String jobId = UUID.randomUUID().toString();
         job.setId(jobId);
         job.setTimestamp(System.currentTimeMillis());
-        String remoteAdd = (String) ThreadLocalUtils.get(Constant.REMOTE_ADD);
+        String remoteAdd = (String) ThreadLocalUtils.get(Constant.REMOTE_ADD_NAME);
 
         Future<ResultData<?>> submit = threadPoolExecutor.submit(
                 () -> {

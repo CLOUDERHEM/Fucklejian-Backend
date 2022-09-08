@@ -31,6 +31,7 @@ dependencies {
     runtimeOnly 'mysql:mysql-connector-java'
     implementation 'com.alibaba:druid-spring-boot-starter:1.2.9'
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'com.google.guava:guava:31.1-jre'
 }
 
 tasks.named('test') {

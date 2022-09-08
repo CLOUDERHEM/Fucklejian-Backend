@@ -2,6 +2,7 @@ package com.lc.legym.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.lc.legym.util.EncryptUtils;
+import com.lc.legym.util.RateLimitUtils;
 import com.lc.legym.util.ResultData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -11,10 +12,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+
+import static com.lc.legym.enums.Constant.AK_NAME;
+import static com.lc.legym.enums.Constant.SALT;
 
 /**
  * @author Aaron Yeung
@@ -24,10 +30,10 @@ import java.util.Objects;
 @Component
 public class CsrfFilter extends OncePerRequestFilter {
 
-    private static final String SALT = "8292af46b29830b1d7b9275f8233b0594f67d6e5";
+
     private static final int SHA1_LENGTH = 40;
     /**
-     * timestamp/100
+     * timestamp/1000
      */
     private static final String TOKEN_GA = "x-lc-ga";
     /**
@@ -42,18 +48,24 @@ public class CsrfFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        if (!check(request)) {
-            String res = JSON.toJSONString(ResultData.error("forbidden", System.currentTimeMillis()));
-            response.getWriter().write(res);
-            response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-            response.setStatus(HttpServletResponse.SC_OK);
+        String remoteAddr = request.getRemoteAddr();
+        if (!RateLimitUtils.tryAcquire(remoteAddr)) {
+            String res = JSON.toJSONString(ResultData.error("频繁访问", System.currentTimeMillis()));
+            writeToResp(res, response);
             return;
         }
+
+        if (!check(request)) {
+            String res = JSON.toJSONString(ResultData.error("Forbidden", System.currentTimeMillis()));
+            writeToResp(res, response);
+            return;
+        }
+
         filterChain.doFilter(request, response);
     }
 
-    public boolean check(HttpServletRequest request) {
-        String ak = request.getParameter("ak");
+    private boolean check(HttpServletRequest request) {
+        String ak = request.getParameter(AK_NAME);
         String akHeader = request.getHeader(TOKEN_AK);
         String ga = request.getHeader(TOKEN_GA);
         String he = request.getHeader(TOKEN_HE);
@@ -62,7 +74,7 @@ public class CsrfFilter extends OncePerRequestFilter {
 
     }
 
-    public boolean isAkValid(String ak, String akHeader) {
+    private boolean isAkValid(String ak, String akHeader) {
         if (!StringUtils.hasText(akHeader)) {
             return false;
         }
@@ -73,7 +85,7 @@ public class CsrfFilter extends OncePerRequestFilter {
         return Objects.equals(akHeader, sha1);
     }
 
-    public boolean isGaValid(String ga) {
+    private boolean isGaValid(String ga) {
 
         if (!StringUtils.hasText(ga)) {
             return false;
@@ -92,9 +104,19 @@ public class CsrfFilter extends OncePerRequestFilter {
         return false;
     }
 
-    public boolean isPathValid(String pathname, String he) {
+    private boolean isPathValid(String pathname, String he) {
         String sha1 = EncryptUtils.getSha1(pathname + SALT);
         return Objects.equals(he, sha1);
+    }
+
+    @SuppressWarnings("all")
+    private static void writeToResp(String res, HttpServletResponse response) throws IOException {
+        ServletOutputStream outputStream = response.getOutputStream();
+        outputStream.write(res.getBytes(StandardCharsets.UTF_8));
+        outputStream.flush();
+        outputStream.close();
+        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 
 }

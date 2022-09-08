@@ -4,3 +4,6 @@ spring:
     username: root
     password: admin
     url: jdbc:mysql://mysql:3306/legym
+logging:
+  charset:
+    console: UTF-8

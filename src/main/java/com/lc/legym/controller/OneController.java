@@ -34,8 +34,8 @@ public class OneController {
     public ResultData<?> upload(@RequestBody @Validated RequestVO requestVO, @RequestParam String ak, HttpServletRequest request) {
         log.info("{}", requestVO);
 
-        ThreadLocalUtils.set(Constant.REMOTE_ADD, request.getHeader("X-Real-IP"));
-        ThreadLocalUtils.set(Constant.AK, ak);
+        ThreadLocalUtils.set(Constant.REMOTE_ADD_NAME, request.getHeader("X-Real-IP"));
+        ThreadLocalUtils.set(Constant.AK_NAME, ak);
         return entryService.run(requestVO, ak);
     }
 
