@@ -19,8 +19,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import static com.lc.legym.enums.Constant.AK_NAME;
-import static com.lc.legym.enums.Constant.SALT;
+import static com.lc.legym.enums.Constant.*;
 
 /**
  * @author Aaron Yeung
@@ -95,7 +94,7 @@ public class CsrfFilter extends OncePerRequestFilter {
         }
 
         long time = System.currentTimeMillis() / 1000;
-        for (long i = time - 1; i <= time + 1; i++) {
+        for (long i = time - TIMESTAMP_PER; i <= time + TIMESTAMP_PER; i++) {
             if (Objects.equals(EncryptUtils.getSha1(i + SALT), ga)) {
                 return true;
             }

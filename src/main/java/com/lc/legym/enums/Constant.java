@@ -11,4 +11,5 @@ public class Constant {
     public static final int MAX_MSG_LENGTH = 50;
     public static final double PERMITS_PER_SECOND = 7D;
     public static final String SALT = "8292af46b29830b1d7b9275f8233b0594f67d6e5";
+    public static final int TIMESTAMP_PER = 3;
 }
