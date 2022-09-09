@@ -8,7 +8,9 @@ import com.lc.legym.model.vo.JobVO;
 import com.lc.legym.model.vo.RequestVO;
 import com.lc.legym.util.CacheMap;
 import com.lc.legym.util.ResultData;
+import com.lc.legym.util.RunningLimitUtils;
 import com.lc.legym.util.ThreadLocalUtils;
+import kotlin.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -55,6 +57,10 @@ public class EntryService {
         }
         if (akDo.getUsageCount() >= akDo.getTotalCount()) {
             return ResultData.error("邀请码使用次数已用尽!");
+        }
+        Pair<String, Long> stringLongPair = RunningLimitUtils.tryRun(requestVO.getUsername());
+        if (stringLongPair != null) {
+            return ResultData.error(stringLongPair.getFirst(), stringLongPair.getSecond());
         }
 
         JobVO job = new JobVO();
