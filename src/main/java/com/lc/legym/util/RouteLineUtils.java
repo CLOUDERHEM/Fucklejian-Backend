@@ -54,6 +54,9 @@ public class RouteLineUtils {
             LatLng start = routeLine.get(i - 1);
             LatLng end = routeLine.get(i);
             int pieces = (int) getDistance(start, end) / DISTANCE_BETWEEN_POINT;
+            if (pieces == 0) {
+                continue;
+            }
             addRouteLine(result, start, end, pieces);
         }
         return result;
