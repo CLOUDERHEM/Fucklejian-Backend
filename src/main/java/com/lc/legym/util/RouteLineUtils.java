@@ -5,11 +5,16 @@ import com.lc.legym.model.Path;
 import com.lc.legym.model.legym.LatLng;
 import kotlin.Pair;
 import lombok.extern.slf4j.Slf4j;
+import org.gavaghan.geodesy.Ellipsoid;
+import org.gavaghan.geodesy.GeodeticCalculator;
+import org.gavaghan.geodesy.GlobalCoordinates;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import static com.lc.legym.enums.Constant.DISTANCE_BETWEEN_POINT;
 
 /**
  * @author Aaron Yeung
@@ -35,7 +40,7 @@ public class RouteLineUtils {
         if (list.isEmpty()) {
             throw new Exception("没有跑步路线, 跑步失败");
         }
-        int index = new Random().nextInt(list.size() + 1) % list.size();
+        int index = new Random().nextInt(list.size()) % list.size();
         Path path = list.get(index);
         List<LatLng> routeLine = path.getRouteLine();
 
@@ -44,25 +49,22 @@ public class RouteLineUtils {
     }
 
     public static List<LatLng> getRouteLine(List<LatLng> routeLine) {
-        List<LatLng> result = new ArrayList<>(40);
+        List<LatLng> result = new ArrayList<>(250);
         for (int i = 1; i < routeLine.size(); i++) {
             LatLng start = routeLine.get(i - 1);
             LatLng end = routeLine.get(i);
-            int pieces = new Random().nextInt(5) + 10;
+            int pieces = (int) getDistance(start, end) / DISTANCE_BETWEEN_POINT;
             addRouteLine(result, start, end, pieces);
         }
         return result;
     }
 
-    public static void backRouteLine(List<LatLng> routeLine, List<LatLng> result) {
-        // 如果第一次跑完里程还差800, 逆向跑一次 todo
-        for (int i = result.size() - 2; i >= 0; i--) {
-            LatLng start = result.get(i + 1);
-            LatLng end = result.get(i);
-            int pieces = new Random().nextInt(2) + 2;
-            addRouteLine(result, start, end, pieces);
-        }
-
+    public static double getDistance(LatLng a, LatLng b) {
+        return new GeodeticCalculator().calculateGeodeticCurve(
+                Ellipsoid.Sphere,
+                new GlobalCoordinates(a.getLatitude(), a.getLongitude()),
+                new GlobalCoordinates(b.getLatitude(), b.getLongitude())
+        ).getEllipsoidalDistance();
     }
 
     public static void addRouteLine(List<LatLng> result, LatLng start, LatLng end, int pieces) {
