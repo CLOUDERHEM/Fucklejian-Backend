@@ -30,18 +30,14 @@ public class GlobalExceptionHandler {
 
         log.error("", ex);
 
-        String exType = ex.getClass().getSimpleName();
-        if (ex.getCause() != null) {
-            exType = ex.getCause().getClass().getSimpleName();
-        }
         String msg;
-        if (ex.getMessage().length() < MAX_MSG_LENGTH) {
+        if (ex.getMessage().length() <= MAX_MSG_LENGTH) {
             msg = ex.getMessage();
         } else {
             msg = ex.getMessage().substring(0, MAX_MSG_LENGTH) + "...";
         }
 
-        return ResultData.error(String.format("ex: %s, msg: %s", exType, msg));
+        return ResultData.error(msg);
     }
 
 
