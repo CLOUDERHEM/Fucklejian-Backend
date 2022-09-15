@@ -143,12 +143,12 @@ public class CsrfFilter extends OncePerRequestFilter {
 
     @SuppressWarnings("all")
     private static void writeToResp(String res, HttpServletResponse response) throws IOException {
+        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        response.setStatus(HttpServletResponse.SC_OK);
         ServletOutputStream outputStream = response.getOutputStream();
         outputStream.write(res.getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
         outputStream.close();
-        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-        response.setStatus(HttpServletResponse.SC_OK);
     }
 
 }
