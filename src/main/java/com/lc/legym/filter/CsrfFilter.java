@@ -1,6 +1,7 @@
 package com.lc.legym.filter;
 
 import com.alibaba.fastjson.JSON;
+import com.lc.legym.model.vo.TimeVO;
 import com.lc.legym.util.EncryptUtils;
 import com.lc.legym.util.RateLimitUtils;
 import com.lc.legym.util.ResultData;
@@ -44,12 +45,27 @@ public class CsrfFilter extends OncePerRequestFilter {
      */
     private static final String TOKEN_HE = "x-lc-he";
 
+    /**
+     * timestamp
+     */
+    private static final String TOKEN_TIMESTAMP = "x-lc-timestamp";
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String remoteAddr = request.getRemoteAddr();
         if (!RateLimitUtils.tryAcquire(remoteAddr)) {
             String res = JSON.toJSONString(ResultData.error("频繁访问", System.currentTimeMillis()));
+            writeToResp(res, response);
+            return;
+        }
+
+        String timestamp = request.getHeader(TOKEN_TIMESTAMP);
+        TimeVO timeValid = isTimeValid(timestamp);
+        if (StringUtils.hasText(timestamp) && timeValid != null) {
+            String res = JSON.toJSONString(ResultData.error(
+                    "与服务器时间不一致, 请校准手机/电脑时间!",
+                    timeValid));
             writeToResp(res, response);
             return;
         }
@@ -71,6 +87,23 @@ public class CsrfFilter extends OncePerRequestFilter {
         String pathname = request.getRequestURI();
         return isAkValid(ak, akHeader) && isGaValid(ga) && isPathValid(pathname, he);
 
+    }
+
+    private TimeVO isTimeValid(String timestamp) {
+        long curInSec = System.currentTimeMillis() / 1000;
+        if (!StringUtils.hasText(timestamp)) {
+            return new TimeVO(0L, curInSec);
+        }
+        try {
+            long clientTimeInSec = Long.parseLong(timestamp) / 1000;
+            if (Math.abs(curInSec - clientTimeInSec) > TIMESTAMP_PER) {
+                return new TimeVO(clientTimeInSec, curInSec);
+            }
+        } catch (Exception e) {
+            return new TimeVO(0L, curInSec);
+        }
+
+        return null;
     }
 
     private boolean isAkValid(String ak, String akHeader) {
