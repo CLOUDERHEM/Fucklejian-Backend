@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,14 @@ public class GlobalExceptionHandler {
         }
 
         return ResultData.error(msg);
+    }
+
+    @ExceptionHandler(SQLException.class)
+    public ResultData<String> handleSqlException(SQLException ex) {
+
+        log.error("", ex);
+
+        return ResultData.error("数据库错误!");
     }
 
 
