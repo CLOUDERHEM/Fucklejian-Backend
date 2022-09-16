@@ -58,7 +58,7 @@ public class RunningService {
             return ResultData.error("获取版本失败, 为确保安全结束跑步");
         }
 
-        if (jsonObject.getJSONObject("data").getInteger("version") != 3000320) {
+        if (jsonObject.getJSONObject("data").getInteger("version") != 30000800) {
             log.info("乐健已更新新版本：" + jsonObject.getJSONObject("data").getInteger("version"));
             return ResultData.error("乐健更新新版本！无法确保安全，跑步失败！");
         }
