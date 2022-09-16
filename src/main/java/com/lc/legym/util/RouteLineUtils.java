@@ -102,7 +102,7 @@ public class RouteLineUtils {
     public static boolean hasRouteLine(Pair<String, String> school) throws Exception {
         update();
         for (Path path : pathList) {
-            if (school.getFirst().equals(path.getSchoolId()) || school.getSecond().equals(school.getSecond())) {
+            if (school.getFirst().equals(path.getSchoolId()) || school.getSecond().equals(path.getSchoolName())) {
                 return true;
             }
         }
