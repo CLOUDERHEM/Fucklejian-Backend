@@ -14,5 +14,5 @@ public class Constant {
     public static final int TIMESTAMP_PER = 5;
     public static final int PER_RUNNING_INTERVAL_SEC = 5 * 60;
     public static final int DISTANCE_BETWEEN_POINT = 4;
-    public static final int MAX_ROUTE_LINE_SIZE = 1100;
+    public static final int MAX_ROUTE_LINE_SIZE = 1500;
 }
