@@ -3,6 +3,7 @@ package com.lc.legym.global;
 
 import com.lc.legym.util.ResultData;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -49,6 +50,11 @@ public class GlobalExceptionHandler {
         return ResultData.error("数据库错误!");
     }
 
+    @ExceptionHandler(HttpMessageConversionException.class)
+    public ResultData<String> handleMessageConvertException(HttpMessageConversionException ex) {
+        log.error("message convert error | {}", ex.getMessage());
+        return ResultData.error("参数转换错误");
+    }
 
     @ExceptionHandler(BindException.class)
     public ResultData<?> validationErrorHandler(BindException ex) {
