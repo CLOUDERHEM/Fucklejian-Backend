@@ -1,7 +1,9 @@
 package com.lc.legym.service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.lc.legym.model.legym.LatLng;
+import com.lc.legym.model.legym.UploadRunInfoReqVo;
 import com.lc.legym.util.HttpUtils;
 import com.lc.legym.util.ResultData;
 import com.lc.legym.util.RouteLineUtils;
@@ -14,6 +16,8 @@ import org.springframework.util.CollectionUtils;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Random;
+
+import static com.lc.legym.enums.Constant.APP_VERSION;
 
 /**
  * @author Aaron Yeung
@@ -58,12 +62,13 @@ public class RunningService {
             return ResultData.error("获取版本失败, 为确保安全结束跑步");
         }
 
-        if (jsonObject.getJSONObject("data").getInteger("version") != 30000800) {
+        if (jsonObject.getJSONObject("data").getInteger("version") != APP_VERSION) {
             log.info("乐健已更新新版本：" + jsonObject.getJSONObject("data").getInteger("version"));
             return ResultData.error("乐健更新新版本！无法确保安全，跑步失败！");
         }
 
         String versionLabel = jsonObject.getJSONObject("data").getString("versionLabel");
+
         info = HttpUtils.doGet(HOST + "/running/app/getHistoryDetails", accessToken);
         if (JSONObject.parseObject(info).getInteger(CODE) != 0) {
             log.info("{}", info);
@@ -101,7 +106,8 @@ public class RunningService {
 
         // 手机号最后一位固定手机类型
         int deviceIndex = userId.charAt(userId.length() - 1) - '0';
-        String runningInfo = runInfoGeneratorService.getRunningDetail(semesterId,
+        UploadRunInfoReqVo uploadRunInfoReqVo = runInfoGeneratorService.getRunningDetail(
+                semesterId,
                 limitationsGoalsSexInfoId,
                 validMileage,
                 versionLabel,
@@ -110,7 +116,8 @@ public class RunningService {
                 routeLine);
 
 
-        String endJsonReturn = HttpUtils.doPost(HOST + "/running/app/v2/uploadRunningDetails", runningInfo, accessToken);
+        String body = JSON.toJSONString(uploadRunInfoReqVo);
+        String endJsonReturn = HttpUtils.doPost(HOST + "/running/app/v2/uploadRunningDetails", body, accessToken);
         JSONObject endReturn = JSONObject.parseObject(endJsonReturn);
         if (endReturn.getInteger(CODE) != 0) {
             return ResultData.error("数据包发送失败！跑步失败!");

@@ -1,6 +1,5 @@
 package com.lc.legym.service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.lc.legym.model.Device;
 import com.lc.legym.model.legym.LatLng;
 import com.lc.legym.model.legym.UploadRunInfoReqVo;
@@ -29,13 +28,13 @@ public class RunInfoGeneratorService {
      */
     private static final double CALORIE_PER_MILEAGE = 49.9;
 
-    public String getRunningDetail(String semesterId,
-                                   String limitationsGoalsSexInfoId,
-                                   double validMileage,
-                                   String appVersion,
-                                   int deviceIndex,
-                                   Pair<String, String> school,
-                                   List<LatLng> routeLine) throws Exception {
+    public UploadRunInfoReqVo getRunningDetail(String semesterId,
+                                               String limitationsGoalsSexInfoId,
+                                               double validMileage,
+                                               String appVersion,
+                                               int deviceIndex,
+                                               Pair<String, String> school,
+                                               List<LatLng> routeLine) throws Exception {
         DecimalFormat df = new DecimalFormat("#.000");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         int scoringType = 1;
@@ -46,7 +45,7 @@ public class RunInfoGeneratorService {
         double totMileage = validMileage;
         double effectiveMileage = validMileage;
         if (validMileage > 3) {
-            validMileage = 3.0D;
+            effectiveMileage = 3.0D;
         }
 
         long endTimestamp = System.currentTimeMillis() - 1000;
@@ -56,7 +55,7 @@ public class RunInfoGeneratorService {
         double avePace = avePaceSecond * 1000 + new Random().nextInt(100);
         log.info("avePace:{} -> {}:{}", avePaceSecond, avePaceSecond / 60, avePaceSecond % 60);
 
-        int totalTime = (int) (validMileage * avePaceSecond);
+        int totalTime = (int) (totMileage * avePaceSecond);
         log.info("total time: {} -> {}:{}", totalTime, totalTime / 60, totalTime % 60);
 
         long startTimestamp = endTimestamp - (long) totalTime * 1000;
@@ -107,12 +106,9 @@ public class RunInfoGeneratorService {
                 ((int) result.getTotalPart());
 
         String hs = EncryptUtils.hs(key);
-        // log.info("key: {} | signDigital:{}", key, hs)
         result.setSignDigital(hs);
 
-        String s = JSONObject.toJSONString(result);
-        // log.info("{}", s);
-        return s;
+        return result;
 
     }
 
