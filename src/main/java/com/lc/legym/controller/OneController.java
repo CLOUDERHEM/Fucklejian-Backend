@@ -7,6 +7,7 @@ import com.lc.legym.util.ResultData;
 import com.lc.legym.util.ThreadLocalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,8 +34,17 @@ public class OneController {
     @PostMapping("/running/upload")
     public ResultData<?> upload(@RequestBody @Validated RequestVO requestVO, @RequestParam String ak, HttpServletRequest request) {
         log.info("{}", requestVO);
+        StringBuilder ip = new StringBuilder();
+        String remoteAddr = request.getHeader(Constant.REMOTE_ADD_NAME);
+        if (StringUtils.hasText(remoteAddr)) {
+            ip.append("Real-IP: ").append(remoteAddr);
+        }
+        String xForwardedFor = request.getHeader(Constant.X_FORWARDED_IP);
+        if (StringUtils.hasText(xForwardedFor)) {
+            ip.append("X-Forwarded-For: ").append(xForwardedFor);
+        }
 
-        ThreadLocalUtils.set(Constant.REMOTE_ADD_NAME, request.getHeader(Constant.REMOTE_ADD_NAME));
+        ThreadLocalUtils.set(Constant.REMOTE_ADD_NAME, ip.toString());
         ThreadLocalUtils.set(Constant.AK_NAME, ak);
         return entryService.run(requestVO, ak);
     }

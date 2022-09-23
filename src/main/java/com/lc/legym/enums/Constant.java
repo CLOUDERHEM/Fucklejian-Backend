@@ -6,6 +6,7 @@ package com.lc.legym.enums;
  */
 public class Constant {
     public static final String REMOTE_ADD_NAME = "X-Real-IP";
+    public static final String X_FORWARDED_IP = "X-Forwarded-For";
     public static final String AK_NAME = "ak";
     public static final String PRIVATE_AK = "clouderhem.github.io";
     public static final int MAX_MSG_LENGTH = 50;
