@@ -53,11 +53,7 @@ public class RunInfoGeneratorService {
         int avePaceSecond = (new Random().nextInt(200) + 374);
         // millis
         double avePace = avePaceSecond * 1000 + new Random().nextInt(100);
-        log.info("avePace:{} -> {}:{}", avePaceSecond, avePaceSecond / 60, avePaceSecond % 60);
-
         int totalTime = (int) (totMileage * avePaceSecond);
-        log.info("total time: {} -> {}:{}", totalTime, totalTime / 60, totalTime % 60);
-
         long startTimestamp = endTimestamp - (long) totalTime * 1000;
         String startTime = simpleDateFormat.format(new Date(startTimestamp));
         String endTime = simpleDateFormat.format(new Date(endTimestamp));
