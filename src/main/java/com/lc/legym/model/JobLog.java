@@ -15,5 +15,4 @@ public class JobLog {
     private String studentId;
     private String schoolName;
     private String organizationName;
-    private String remoteAdd;
 }

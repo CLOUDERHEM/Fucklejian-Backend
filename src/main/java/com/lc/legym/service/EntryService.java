@@ -1,7 +1,6 @@
 package com.lc.legym.service;
 
 import com.lc.legym.config.SystemConfig;
-import com.lc.legym.enums.Constant;
 import com.lc.legym.mapper.AkMapper;
 import com.lc.legym.model.AkDO;
 import com.lc.legym.model.vo.JobVO;
@@ -9,7 +8,6 @@ import com.lc.legym.model.vo.RequestVO;
 import com.lc.legym.util.CacheMap;
 import com.lc.legym.util.ResultData;
 import com.lc.legym.util.RunningLimitUtils;
-import com.lc.legym.util.ThreadLocalUtils;
 import kotlin.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +65,6 @@ public class EntryService {
         String jobId = UUID.randomUUID().toString();
         job.setId(jobId);
         job.setTimestamp(System.currentTimeMillis());
-        String remoteAdd = (String) ThreadLocalUtils.get(Constant.REMOTE_ADD_NAME);
 
         Future<ResultData<?>> submit = threadPoolExecutor.submit(
                 () -> {
@@ -75,9 +72,7 @@ public class EntryService {
                             requestVO.getPassword(),
                             requestVO.getMile(),
                             requestVO.getRouteLine(),
-                            remoteAdd,
                             ak);
-
                     // 使用次数加一
                     if (resultData.getCode().equals(0)) {
                         akMapper.useAkDo(ak);
