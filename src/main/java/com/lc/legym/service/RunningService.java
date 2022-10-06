@@ -63,7 +63,7 @@ public class RunningService {
         }
 
         if (jsonObject.getJSONObject("data").getInteger("version") != APP_VERSION) {
-            log.info("乐健已更新新版本：" + jsonObject.getJSONObject("data").getInteger("version"));
+            log.error("乐健已更新新版本：" + jsonObject.getJSONObject("data").getInteger("version"));
             return ResultData.error("乐健更新新版本！无法确保安全，跑步失败！");
         }
 
@@ -76,6 +76,7 @@ public class RunningService {
 
         info = HttpUtils.doGet(HOST + "/education/semester/getCurrent", accessToken);
         if ((jsonObject = JSONObject.parseObject(info)).getInteger(CODE) != 0 || jsonObject.get("data") == null) {
+            log.error("未在学期中! : {}", schoolName);
             return ResultData.error("获取semesterId失败，不在学期中, 跑步失败");
         }
 
