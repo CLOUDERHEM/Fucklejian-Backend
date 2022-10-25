@@ -28,6 +28,14 @@ public class RunInfoGeneratorService {
      */
     private static final double CALORIE_PER_MILEAGE = 49.9;
 
+
+    private static final List<String> SCHOOL_NO_FREE_RUNNING = new ArrayList<>(4);
+
+
+    static {
+        SCHOOL_NO_FREE_RUNNING.add("西南石油大学");
+    }
+
     public UploadRunInfoReqVo getRunningDetail(String semesterId,
                                                String limitationsGoalsSexInfoId,
                                                double validMileage,
@@ -84,7 +92,11 @@ public class RunInfoGeneratorService {
         result.setTotalPart(totalPart);
         result.setPaceNumber(paceNumber);
         result.setPaceRange(0);
-        result.setType("自由跑");
+        if(SCHOOL_NO_FREE_RUNNING.contains(school.getSecond())){
+            result.setType("范围跑");
+        }else{
+            result.setType("自由跑");
+        }
         result.setUneffectiveReason("");
         Device device = Device.getDeviceList().get(deviceIndex);
         result.setDeviceType(device.getType());
