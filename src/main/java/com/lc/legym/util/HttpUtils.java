@@ -21,7 +21,7 @@ public class HttpUtils {
     public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
 
-    public static String  doGet(String url, String auth) throws IOException {
+    public static String doGet(String url, String auth, boolean needLog) throws IOException {
 
         Request.Builder builder = new Request.Builder()
                 .url(url);
@@ -34,7 +34,7 @@ public class HttpUtils {
 
         try (Response response = CLIENT.newCall(request).execute()) {
             String res = Objects.requireNonNull(response.body()).string();
-            if (url.contains("legym")) {
+            if (needLog) {
                 log.info("url:{} | response:{}", url, res);
             }
             return res;
@@ -42,7 +42,7 @@ public class HttpUtils {
 
     }
 
-    public static String doPost(String url, String param, String auth) {
+    public static String doPost(String url, String param, String auth, boolean needLog) {
 
         RequestBody body = RequestBody.create(param, JSON);
         Request.Builder builder = new Request.Builder().url(url);
@@ -56,17 +56,12 @@ public class HttpUtils {
         Call call = CLIENT.newCall(request);
         try (Response response = call.execute()) {
             String string = Objects.requireNonNull(response.body()).string();
-            if (url.contains("legym")) {
+            if (needLog) {
                 log.info("url:{} | request:{} | response:{} ", url, param, string);
             }
             return string;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static void main(String[] args) throws IOException {
-        HttpUtils.doPost("https://baidu.com", "", null);
-        HttpUtils.doGet("https://baidu.com", "");
     }
 }

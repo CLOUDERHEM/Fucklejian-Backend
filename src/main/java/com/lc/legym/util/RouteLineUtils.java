@@ -113,7 +113,7 @@ public class RouteLineUtils {
         if (pathList == null || lastTimestamp - System.currentTimeMillis() > NEED_UPDATE) {
             for (int i = 0; i < 3; i++) {
                 try {
-                    String s = HttpUtils.doGet("https://clouderhem.github.io/main.json", null);
+                    String s = HttpUtils.doGet("https://clouderhem.github.io/main.json", null, false);
                     pathList = JSON.parseArray(s, Path.class);
                     lastTimestamp = System.currentTimeMillis();
                     log.info("updated path sources file");
