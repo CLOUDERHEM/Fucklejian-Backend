@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import static com.lc.legym.enums.Constant.MAX_MILE;
+
 /**
  * @author Aaron Yeung
  */
@@ -28,21 +30,14 @@ public class RunInfoGeneratorService {
      */
     private static final double CALORIE_PER_MILEAGE = 49.9;
 
-
-    private static final List<String> SCHOOL_NO_FREE_RUNNING = new ArrayList<>(4);
-
-
-    static {
-        SCHOOL_NO_FREE_RUNNING.add("西南石油大学");
-    }
-
     public UploadRunInfoReqVo getRunningDetail(String semesterId,
                                                String limitationsGoalsSexInfoId,
                                                double validMileage,
                                                String appVersion,
                                                int deviceIndex,
                                                Pair<String, String> school,
-                                               List<LatLng> routeLine) throws Exception {
+                                               List<LatLng> routeLine,
+                                               Pair<Integer, Integer> runningPattern) throws Exception {
         DecimalFormat df = new DecimalFormat("#.000");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         int scoringType = 1;
@@ -51,10 +46,7 @@ public class RunInfoGeneratorService {
 
         validMileage = Double.parseDouble(df.format(validMileage));
         double totMileage = validMileage;
-        double effectiveMileage = validMileage;
-        if (validMileage > 3) {
-            effectiveMileage = 3.0D;
-        }
+        double effectiveMileage = Math.min(validMileage, MAX_MILE);
 
         long endTimestamp = System.currentTimeMillis() - 1000;
         // 跑一千米需要秒数
@@ -71,6 +63,14 @@ public class RunInfoGeneratorService {
         int paceNumber = (int) (totMileage * 1000.0D / pace / 2);
 
         UploadRunInfoReqVo result = new UploadRunInfoReqVo();
+
+        if (runningPattern.getFirst() != null && runningPattern.getFirst().equals(1)) {
+            result.setType("自由跑");
+        } else if ((runningPattern.getSecond() != null && runningPattern.getSecond().equals(1))) {
+            result.setType("范围跑");
+        } else {
+            throw new Exception("自由跑和范围跑均为关闭! 跑步失败");
+        }
         result.setScoringType(scoringType);
         result.setSemesterId(semesterId);
         result.setEffectiveMileage(effectiveMileage);
@@ -92,12 +92,8 @@ public class RunInfoGeneratorService {
         result.setTotalPart(totalPart);
         result.setPaceNumber(paceNumber);
         result.setPaceRange(0);
-        if(SCHOOL_NO_FREE_RUNNING.contains(school.getSecond())){
-            result.setType("范围跑");
-        }else{
-            result.setType("自由跑");
-        }
         result.setUneffectiveReason("");
+
         Device device = Device.getDeviceList().get(deviceIndex);
         result.setDeviceType(device.getType());
         result.setSystemVersion(device.getVersion());

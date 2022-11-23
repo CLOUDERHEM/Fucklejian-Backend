@@ -12,10 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import static com.lc.legym.enums.Constant.APP_VERSION;
 
@@ -35,96 +37,117 @@ public class RunningService {
         this.runInfoGeneratorService = runInfoGeneratorService;
     }
 
-    public ResultData<?> uploadDetail(String userId, String userPassword, double validMileage, List<LatLng> routeLine, String ak) throws Exception {
+    public ResultData<?> uploadDetail(String username, String password, double validMileage, List<LatLng> routeLine, String ak) throws Exception {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("entrance", "1");
-        jsonObject.put("password", userPassword);
-        jsonObject.put("userName", userId);
-        HttpUtils.doGet(HOST + "/education/semester/getCurrent", null);
-        String info = HttpUtils.doPost(HOST + "/authorization/user/manage/login", jsonObject.toJSONString(), null);
-        if ((jsonObject = JSONObject.parseObject(info)).getInteger(CODE) != 0) {
-            return ResultData.error(jsonObject.getString("message"));
+        // seq, 模拟
+        String uuid = UUID.randomUUID().toString();
+        HttpUtils.doGet(HOST + "/education/semester/getCurrent", uuid, false);
+        HttpUtils.doGet(HOST + "/running/app/getHistoryDetails", uuid, false);
+        HttpUtils.doGet(HOST + "/authorization/mobileApp/getLastVersion?platform=1", uuid, false);
+
+        JSONObject loginRequestParam = new JSONObject();
+        loginRequestParam.put("entrance", "1");
+        loginRequestParam.put("password", password);
+        loginRequestParam.put("userName", username);
+        String loginResponseRaw = HttpUtils.doPost(HOST + "/authorization/user/manage/login", loginRequestParam.toJSONString(), null, true);
+        JSONObject loginResponse = JSONObject.parseObject(loginResponseRaw);
+        if (loginResponse.getInteger(CODE) != 0) {
+            return ResultData.error(loginResponse.getString("message"));
         }
 
-        jsonObject = jsonObject.getJSONObject("data");
-        String accessToken = jsonObject.getString("accessToken");
+        JSONObject loginResponseData = loginResponse.getJSONObject("data");
+        String accessToken = loginResponseData.getString("accessToken");
 
-        String schoolId = jsonObject.getString("schoolId");
-        String schoolName = jsonObject.getString("schoolName");
+        String schoolId = loginResponseData.getString("schoolId");
+        String schoolName = loginResponseData.getString("schoolName");
         Pair<String, String> school = new Pair<>(schoolId, schoolName);
         if (CollectionUtils.isEmpty(routeLine) && !RouteLineUtils.hasRouteLine(school)) {
-            return ResultData.error("未找到跑步路线, 跑步失败");
+            return ResultData.error("未找到内置跑步路线, 跑步失败");
         }
 
-        info = HttpUtils.doGet(HOST + "/authorization/mobileApp/getLastVersion?platform=1", accessToken);
-        if ((jsonObject = JSONObject.parseObject(info)).getInteger(CODE) != 0) {
-            return ResultData.error("获取版本失败, 为确保安全结束跑步");
+        String versionResponseRaw = HttpUtils.doGet(HOST + "/authorization/mobileApp/getLastVersion?platform=1", accessToken, true);
+        JSONObject versionResponse = JSONObject.parseObject(versionResponseRaw);
+        if (versionResponse.getInteger(CODE) != 0) {
+            return ResultData.error("获取乐健版本失败, 跑步失败!");
         }
 
-        if (jsonObject.getJSONObject("data").getInteger("version") != APP_VERSION) {
-            log.error("乐健已更新新版本：" + jsonObject.getJSONObject("data").getInteger("version"));
-            return ResultData.error("乐健更新新版本！无法确保安全，跑步失败！");
+        JSONObject versionResponseData = versionResponse.getJSONObject("data");
+        Integer version = versionResponseData.getInteger("version");
+        if (version != APP_VERSION) {
+            log.error("乐健已更新新版本：" + version);
+            return ResultData.error("乐健更新新版本! 跑步失败!");
         }
 
-        String versionLabel = jsonObject.getJSONObject("data").getString("versionLabel");
+        String versionLabel = versionResponseData.getString("versionLabel");
 
-        info = HttpUtils.doGet(HOST + "/running/app/getHistoryDetails", accessToken);
-        if (JSONObject.parseObject(info).getInteger(CODE) != 0) {
-            log.info("{}", info);
-        }
+        String historyDetailResponseRaw = HttpUtils.doGet(HOST + "/running/app/getHistoryDetails", accessToken, true);
+        // JSONObject historyDetailResponse = JSONObject.parseObject(historyDetailResponseRaw)
+        // todo 里程校验
 
-        info = HttpUtils.doGet(HOST + "/education/semester/getCurrent", accessToken);
-        if ((jsonObject = JSONObject.parseObject(info)).getInteger(CODE) != 0 || jsonObject.get("data") == null) {
+
+        String currentResponseRaw = HttpUtils.doGet(HOST + "/education/semester/getCurrent", accessToken, true);
+        JSONObject currentSemesterResponse = JSONObject.parseObject(currentResponseRaw);
+        JSONObject currentSemesterResponseData = currentSemesterResponse.getJSONObject("data");
+        if (currentSemesterResponse.getInteger(CODE) != 0
+                || currentSemesterResponseData == null
+                || !StringUtils.hasText(currentSemesterResponseData.getString("id"))) {
             log.error("未在学期中! : {}", schoolName);
             return ResultData.error("获取semesterId失败，不在学期中, 跑步失败");
         }
 
-        String semesterId = jsonObject.getJSONObject("data").getString("id");
-        JSONObject semJson = new JSONObject();
-        semJson.put("semesterId", semesterId);
-        info = HttpUtils.doPost(HOST + "/running/app/getRunningLimit", semJson.toJSONString(), accessToken);
-        if ((jsonObject = JSONObject.parseObject(info)).getInteger(CODE) != 0) {
+        String semesterId = currentSemesterResponseData.getString("id");
+        JSONObject runningLimitRequestParam = new JSONObject();
+        runningLimitRequestParam.put("semesterId", semesterId);
+        String runningLimitResponseRaw = HttpUtils.doPost(HOST + "/running/app/getRunningLimit", runningLimitRequestParam.toJSONString(), accessToken, true);
+        JSONObject runningLimitResponse = JSONObject.parseObject(runningLimitResponseRaw);
+        if (runningLimitResponse.getInteger(CODE) != 0) {
             return ResultData.error("获取RunningLimit失败，跑步失败");
         }
 
-        String limitationsGoalsSexInfoId = jsonObject.getJSONObject("data").getString("limitationsGoalsSexInfoId");
-        String patternId = jsonObject.getJSONObject("data").getString("patternId");
+        JSONObject runningLimitResponseData = runningLimitResponse.getJSONObject("data");
+        Integer freeRunningPattern = runningLimitResponseData.getInteger("freePattern");
+        Integer scopeRunningPattern = runningLimitResponseData.getInteger("scopePattern");
+        Pair<Integer, Integer> runningPattern = new Pair<>(freeRunningPattern, scopeRunningPattern);
+        String limitationsGoalsSexInfoId = runningLimitResponseData.getString("limitationsGoalsSexInfoId");
+        String patternId = runningLimitResponseData.getString("patternId");
+
         DecimalFormat decimalFormat1 = new DecimalFormat("0.0000000000000000");
         DecimalFormat decimalFormat2 = new DecimalFormat("0.0000000000000000");
         Random random = new Random();
-        jsonObject = new JSONObject();
-        jsonObject.put("latitude", 30.82929175755101 + Double.parseDouble(decimalFormat1.format((random.nextDouble() - 0.5) / 1000000)));
-        jsonObject.put("longitude", 104.18384454565867 + Double.parseDouble(decimalFormat2.format((random.nextDouble() - 0.5) / 10000)));
-        jsonObject.put("limitationsGoalsSexInfoId", limitationsGoalsSexInfoId);
-        jsonObject.put("patternId", patternId);
-        jsonObject.put("semesterId", semesterId);
-        jsonObject.put("scoringType", 1);
-        String runningRange = HttpUtils.doPost(HOST + "/running/app/getRunningRange", jsonObject.toJSONString(), accessToken);
-        if (JSONObject.parseObject(runningRange).getInteger(CODE) != 0) {
+        JSONObject getRunningRangeParam = new JSONObject();
+        getRunningRangeParam.put("latitude", 30.82929 + Double.parseDouble(decimalFormat1.format((random.nextDouble() - 0.5) / 1000000)));
+        getRunningRangeParam.put("longitude", 104.183844 + Double.parseDouble(decimalFormat2.format((random.nextDouble() - 0.5) / 10000)));
+        getRunningRangeParam.put("limitationsGoalsSexInfoId", limitationsGoalsSexInfoId);
+        getRunningRangeParam.put("patternId", patternId);
+        getRunningRangeParam.put("semesterId", semesterId);
+        getRunningRangeParam.put("scoringType", 1);
+
+        String runningRangeResponseRaw = HttpUtils.doPost(HOST + "/running/app/getRunningRange", getRunningRangeParam.toJSONString(), accessToken, false);
+        JSONObject runningRangeResponse = JSONObject.parseObject(runningRangeResponseRaw);
+        if (runningRangeResponse.getInteger(CODE) != 0) {
             return ResultData.error("无法获取跑步范围！跑步失败");
         }
 
         // 手机号最后一位固定手机类型
-        int deviceIndex = userId.charAt(userId.length() - 1) - '0';
-        UploadRunInfoReqVo uploadRunInfoReqVo = runInfoGeneratorService.getRunningDetail(
-                semesterId,
+        int deviceIndex = username.charAt(username.length() - 1) - '0';
+        UploadRunInfoReqVo uploadRunInfoReqVo = runInfoGeneratorService.getRunningDetail(semesterId,
                 limitationsGoalsSexInfoId,
                 validMileage,
                 versionLabel,
                 deviceIndex,
                 school,
-                routeLine);
+                routeLine,
+                runningPattern);
 
 
         String body = JSON.toJSONString(uploadRunInfoReqVo);
-        String endJsonReturn = HttpUtils.doPost(HOST + "/running/app/v2/uploadRunningDetails", body, accessToken);
-        JSONObject endReturn = JSONObject.parseObject(endJsonReturn);
-        if (endReturn.getInteger(CODE) != 0) {
-            return ResultData.error("数据包发送失败！跑步失败!");
+        String uploadDetailResponseRaw = HttpUtils.doPost(HOST + "/running/app/v2/uploadRunningDetails", body, accessToken, true);
+        JSONObject uploadDetailResponse = JSONObject.parseObject(uploadDetailResponseRaw);
+        if (uploadDetailResponse.getInteger(CODE) != 0) {
+            return ResultData.error("跑步失败! 未知原因");
         }
 
-        return ResultData.success("跑步成功!", endReturn.getString("data"));
+        return ResultData.success("跑步成功!");
 
     }
 
