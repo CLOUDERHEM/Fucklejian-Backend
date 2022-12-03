@@ -1,12 +1,9 @@
 package com.lc.legym.util;
 
-import cn.hutool.core.collection.ConcurrentHashSet;
 import kotlin.Pair;
 
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.WeakHashMap;
 
 import static com.lc.legym.enums.Constant.PER_RUNNING_INTERVAL_SEC;
 
@@ -15,9 +12,10 @@ import static com.lc.legym.enums.Constant.PER_RUNNING_INTERVAL_SEC;
  * @date 9/9/2022 5:28 PM
  */
 public class RunningLimitUtils {
-    private static final Map<String, Long> MAP = new ConcurrentHashMap<>();
 
-    public static Pair<String, Long> tryRun(String username) {
+    private static final Map<String, Long> MAP = new WeakHashMap<>();
+
+    public synchronized static Pair<String, Long> tryRun(String username) {
         Long last = MAP.get(username);
         if (last == null) {
             MAP.put(username, System.currentTimeMillis());
@@ -41,18 +39,4 @@ public class RunningLimitUtils {
         return null;
     }
 
-    public static Set<Map.Entry<String, Long>> gc() {
-        Set<Map.Entry<String, Long>> res = new ConcurrentHashSet<>();
-        Set<Map.Entry<String, Long>> entries = MAP.entrySet();
-        Iterator<Map.Entry<String, Long>> iterator = entries.iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, Long> next = iterator.next();
-            long interval = (System.currentTimeMillis() - next.getValue()) / 1000;
-            if (interval > PER_RUNNING_INTERVAL_SEC + 1) {
-                iterator.remove();
-                res.add(next);
-            }
-        }
-        return res;
-    }
 }
