@@ -1,7 +1,7 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.3'
-    id 'io.spring.dependency-management' version '1.0.13.RELEASE'
     id 'java'
+    id 'org.springframework.boot' version '2.7.8'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 }
 
 group = 'com.lc'
@@ -15,6 +15,7 @@ configurations {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -27,7 +28,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
     implementation 'cn.hutool:hutool-core:5.8.0'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    runtimeOnly 'mysql:mysql-connector-java'
+    runtimeOnly 'mysql:mysql-connector-java:8.0.32'
     implementation 'com.alibaba:druid-spring-boot-starter:1.2.9'
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
     implementation 'com.google.guava:guava:31.1-jre'
