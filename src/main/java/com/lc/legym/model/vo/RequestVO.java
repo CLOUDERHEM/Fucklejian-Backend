@@ -20,7 +20,7 @@ public class RequestVO {
     @NotEmpty(message = "密码不能为空")
     private String password;
     @NotNull(message = "公里数不能为空")
-    @Max(value = 3, message = "跑步里程不能超过3km")
+    @Max(value = 5, message = "跑步里程不能超过3km")
     @Min(value = 1, message = "跑步里程不能小于1km")
     private Double mile;
     private List<LatLng> routeLine;
