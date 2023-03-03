@@ -37,7 +37,7 @@ public class RunningService {
         this.runInfoGeneratorService = runInfoGeneratorService;
     }
 
-    public ResultData<?> uploadDetail(String username, String password, double validMileage, List<LatLng> routeLine, String ak) throws Exception {
+    public ResultData<?> uploadDetail(String username, String password, double validMileage, List<LatLng> routeLine) throws Exception {
 
         // seq, 模拟
         String uuid = UUID.randomUUID().toString();

@@ -37,7 +37,7 @@ public class EntryService {
         this.threadPoolExecutor = asyncServiceExecutor;
     }
 
-    public ResultData<?> run(RequestVO requestVO, String ak) {
+    public ResultData<?> run(RequestVO requestVO) {
 
         JobVO job = new JobVO();
         String jobId = UUID.randomUUID().toString();
@@ -48,8 +48,7 @@ public class EntryService {
                 () -> runningService.uploadDetail(requestVO.getUsername(),
                         requestVO.getPassword(),
                         requestVO.getMile(),
-                        requestVO.getRouteLine(),
-                        ak));
+                        requestVO.getRouteLine()));
 
         JOB_LIST.put(jobId, submit);
 
@@ -58,7 +57,7 @@ public class EntryService {
     }
 
 
-    public ResultData<?> query(String id, String ak) throws ExecutionException, InterruptedException {
+    public ResultData<?> query(String id) throws ExecutionException, InterruptedException {
 
 
         if (JOB_LIST.isEmpty()) {

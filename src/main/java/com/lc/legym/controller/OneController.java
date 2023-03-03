@@ -29,14 +29,14 @@ public class OneController {
     }
 
     @PostMapping("/running/upload")
-    public ResultData<?> upload(@RequestBody @Validated RequestVO requestVO, @RequestParam String ak, HttpServletRequest request) {
+    public ResultData<?> upload(@RequestBody @Validated RequestVO requestVO, HttpServletRequest request) {
         log.info("{}", requestVO);
-        return entryService.run(requestVO, ak);
+        return entryService.run(requestVO);
     }
 
     @GetMapping("/running/query")
-    public ResultData<?> result(@RequestParam String id, @RequestParam String ak) throws ExecutionException, InterruptedException {
-        return entryService.query(id, ak);
+    public ResultData<?> result(@RequestParam String id) throws ExecutionException, InterruptedException {
+        return entryService.query(id);
     }
 
 }
