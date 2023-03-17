@@ -1,15 +1,11 @@
 package com.lc.legym.util;
 
-import com.alibaba.fastjson.JSON;
-import com.lc.legym.model.Path;
 import com.lc.legym.model.legym.LatLng;
-import kotlin.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.gavaghan.geodesy.Ellipsoid;
 import org.gavaghan.geodesy.GeodeticCalculator;
 import org.gavaghan.geodesy.GlobalCoordinates;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,31 +19,6 @@ import static com.lc.legym.enums.Constant.MAX_ROUTE_LINE_SIZE;
  */
 @Slf4j
 public class RouteLineUtils {
-
-    private static long lastTimestamp = System.currentTimeMillis();
-    private static final long NEED_UPDATE = 1000 * 60 * 5;
-
-
-    private static List<Path> pathList;
-
-    public static List<LatLng> getRouteLine(Pair<String, String> school, double mile) throws Exception {
-        update();
-        List<Path> list = new ArrayList<>();
-        pathList.forEach((e) -> {
-            if (school.getFirst().equals(e.getSchoolId()) || school.getSecond().equals(e.getSchoolName())) {
-                list.add(e);
-            }
-        });
-        if (list.isEmpty()) {
-            throw new Exception("没有跑步路线, 跑步失败");
-        }
-        int index = new Random().nextInt(list.size()) % list.size();
-        Path path = list.get(index);
-        List<LatLng> routeLine = path.getRouteLine();
-
-        // 增加路径
-        return getRouteLine(routeLine);
-    }
 
     public static List<LatLng> getRouteLine(List<LatLng> routeLine) throws Exception {
         List<LatLng> result = new ArrayList<>(250);
@@ -99,32 +70,4 @@ public class RouteLineUtils {
         return new LatLng(startLat, startLng);
     }
 
-    public static boolean hasRouteLine(Pair<String, String> school) throws Exception {
-        update();
-        for (Path path : pathList) {
-            if (school.getFirst().equals(path.getSchoolId()) || school.getSecond().equals(path.getSchoolName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static void update() throws Exception {
-        if (pathList == null || lastTimestamp - System.currentTimeMillis() > NEED_UPDATE) {
-            for (int i = 0; i < 3; i++) {
-                try {
-                    String s = HttpUtils.doGet("https://clouderhem.github.io/main.json", null, false);
-                    pathList = JSON.parseArray(s, Path.class);
-                    lastTimestamp = System.currentTimeMillis();
-                    log.info("updated path sources file");
-                    return;
-                } catch (IOException e) {
-                    log.error("connecting github timeout, will try again after 1s");
-                    Thread.sleep(1000);
-                }
-            }
-            throw new Exception("can not connect github for path file");
-        }
-
-    }
 }

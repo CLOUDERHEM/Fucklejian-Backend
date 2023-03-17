@@ -5,6 +5,7 @@ import com.lc.legym.service.EntryService;
 import com.lc.legym.util.ResultData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,9 @@ public class OneController {
     @PostMapping("/running/upload")
     public ResultData<?> upload(@RequestBody @Validated RequestVO requestVO, @RequestParam String ak, HttpServletRequest request) {
         log.info("{}", requestVO);
+        if (CollectionUtils.isEmpty(requestVO.getRouteLine())) {
+            return ResultData.error("跑步失败! 跑步路线不能为空");
+        }
         return entryService.run(requestVO, ak);
     }
 

@@ -6,12 +6,10 @@ import com.lc.legym.model.legym.LatLng;
 import com.lc.legym.model.legym.UploadRunInfoReqVo;
 import com.lc.legym.util.HttpUtils;
 import com.lc.legym.util.ResultData;
-import com.lc.legym.util.RouteLineUtils;
 import kotlin.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.text.DecimalFormat;
@@ -61,9 +59,6 @@ public class RunningService {
         String schoolId = loginResponseData.getString("schoolId");
         String schoolName = loginResponseData.getString("schoolName");
         Pair<String, String> school = new Pair<>(schoolId, schoolName);
-        if (CollectionUtils.isEmpty(routeLine) && !RouteLineUtils.hasRouteLine(school)) {
-            return ResultData.error("未找到内置跑步路线, 跑步失败");
-        }
 
         String versionResponseRaw = HttpUtils.doGet(HOST + "/authorization/mobileApp/getLastVersion?platform=1", accessToken, true);
         JSONObject versionResponse = JSONObject.parseObject(versionResponseRaw);
@@ -89,8 +84,8 @@ public class RunningService {
         JSONObject currentSemesterResponse = JSONObject.parseObject(currentResponseRaw);
         JSONObject currentSemesterResponseData = currentSemesterResponse.getJSONObject("data");
         if (currentSemesterResponse.getInteger(CODE) != 0
-                || currentSemesterResponseData == null
-                || !StringUtils.hasText(currentSemesterResponseData.getString("id"))) {
+            || currentSemesterResponseData == null
+            || !StringUtils.hasText(currentSemesterResponseData.getString("id"))) {
             log.error("未在学期中! : {}", schoolName);
             return ResultData.error("获取semesterId失败，不在学期中, 跑步失败");
         }

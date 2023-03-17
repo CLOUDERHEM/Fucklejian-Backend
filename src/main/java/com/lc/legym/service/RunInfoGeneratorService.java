@@ -8,7 +8,6 @@ import com.lc.legym.util.RouteLineUtils;
 import kotlin.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -83,11 +82,7 @@ public class RunInfoGeneratorService {
         result.setEffectivePart(effectivePart);
         result.setLimitationsGoalsSexInfoId(limitationsGoalsSexInfoId);
         result.setSignPoint(new ArrayList<>());
-        if (!CollectionUtils.isEmpty(routeLine)) {
-            result.setRoutineLine(RouteLineUtils.getRouteLine(routeLine));
-        } else {
-            result.setRoutineLine(RouteLineUtils.getRouteLine(school, totMileage));
-        }
+        result.setRoutineLine(RouteLineUtils.getRouteLine(routeLine));
         result.setAvePace(avePace);
         result.setTotalPart(totalPart);
         result.setPaceNumber(paceNumber);
