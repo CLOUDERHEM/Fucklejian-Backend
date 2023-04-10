@@ -1,9 +1,9 @@
 package com.lc.legym.model.vo;
 
 import com.lc.legym.model.legym.LatLng;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import javax.validation.constraints.*;
 import java.util.List;
 
 /**

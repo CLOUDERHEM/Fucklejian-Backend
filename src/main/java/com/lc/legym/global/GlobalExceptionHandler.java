@@ -2,6 +2,8 @@ package com.lc.legym.global;
 
 
 import com.lc.legym.util.ResultData;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.validation.BindException;
@@ -10,11 +12,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.lc.legym.enums.Constant.MAX_MSG_LENGTH;
 
@@ -61,7 +60,7 @@ public class GlobalExceptionHandler {
         List<String> collect = ex.getBindingResult().getAllErrors()
                 .stream()
                 .map(ObjectError::getDefaultMessage)
-                .collect(Collectors.toList());
+                .toList();
         StringBuilder sb = new StringBuilder();
         collect.forEach(sb::append);
 
@@ -78,7 +77,7 @@ public class GlobalExceptionHandler {
         List<String> collect = ex.getBindingResult().getAllErrors()
                 .stream()
                 .map(ObjectError::getDefaultMessage)
-                .collect(Collectors.toList());
+                .toList();
         StringBuilder sb = new StringBuilder();
         collect.forEach(e -> sb.append(e).append(" "));
 
@@ -95,7 +94,7 @@ public class GlobalExceptionHandler {
         List<String> errorInformation = ex.getConstraintViolations()
                 .stream()
                 .map(ConstraintViolation::getMessage)
-                .collect(Collectors.toList());
+                .toList();
         StringBuilder sb = new StringBuilder();
         errorInformation.forEach(sb::append);
 
