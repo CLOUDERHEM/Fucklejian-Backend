@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.ExecutionException;
 
 
@@ -28,7 +29,7 @@ public class OneController {
     }
 
     @PostMapping("/running/upload")
-    public ResultData<?> upload(@RequestBody @Validated RequestVO requestVO) {
+    public ResultData<?> upload(@RequestBody @Validated RequestVO requestVO, HttpServletRequest request) {
         log.info("{}", requestVO);
         return entryService.run(requestVO);
     }
