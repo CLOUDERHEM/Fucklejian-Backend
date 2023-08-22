@@ -4,8 +4,8 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 }
 
-group = 'com.lc'
-version = '0.0.1-SNAPSHOT'
+group = 'io.github.clouderhem'
+version = '1.0.1-SNAPSHOT'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 configurations {
